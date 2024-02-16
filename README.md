@@ -1,4 +1,4 @@
-<title>Computational Musicology - Portfolio</title>
+<h1>Computational Musicology - Portfolio</h1>
 <h2>Compus description:</h2>
 <p>
 In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
