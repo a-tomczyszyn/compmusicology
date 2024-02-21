@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Computational Musicology Portfolio"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -9,21 +9,41 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(spotifyr)
+library(tidyverse)
 ```
 
-Column {data-width=650}
------------------------------------------------------------------------
+### Introduction
 
-### Chart A
+In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
 
-```{r}
+This analysis will focus on comparing pov: indie to what is generally considered classic indie in order to establish core differences between the two. Some driving questions include: 
 
-```
+<ul>
+    <li>Is pov: indie more of a "vibe" of indie music, or does it classify as a separate and uniquely different genre? If it is more of a "vibe", what describes it?</li>
+    <li>If it is found to be reasonably different, does pov: indie have recognizable precursors? Is there a rough year estimate for when it emerged?</li>
+    <li>How big is the overlap between the two genres, if any?</li>
+</ul>
+
+The analysis will be conducted by taking a representative sample of around 100 tracks out of each genre and applying some comparative measures. The samples are taken from the "Best of POV: Indie" playlist made by volt.fm and the "Indie Pop 2010s" playlist by Spotify. The best course of action would be to use two playlists created by Spotify; however, even though the company has invented the term pov: indie, no official playlists of this genre exist. This begs the question of the quality of the volt.fm creation, which can reasonably be assumed reliable and representative, as volt.fm is a stats and music discovery tool. Additionally, both playlists have been reviewed "by eye" to double-check if they can be assumed reliable. 
+
+However, the corpus does pose some limitations. One factor that presumably may be problematic is the quite large variance in release years of songs in the pov: indie playlist. To combat the impact of this, a playlist that covers the entirety of the 2010s was chosen. Yet, this may have a reverse impact on the results - this will be checked and necessary adjustments will be made if needed.
+
+When it comes to artists and tracks that may be atypical, Mitski (specifically "Liquid Smooth"), Hozier, and My Chemical Romance in the pov: indie playlist seem like outliers. Those songs, however, may be interesting to analyze in case pov: indie ends up representing more of a "vibe", rather than separate genre qualities. The classic indie playlist seems more balanced in that regard, though it still contains some artists and tracks that could be considered on the verge of genres (Arcade Fire, Mumford & Sons). As far as typical examples go, pov: indie is a bit difficult to assess since the genre is not clearly defined. In the classic indie playlist, almost all entries are very representative, with examples like Clairo, GROUPLOVE, Wallows, Dayglow, and alt-J.
+
+
+### Initial plot analysis:
+
+***
+The initial plot analysis was first conducted by comapring means of various audio features. Mainly three seemed to have the biggest disparity between the sets: energy, acousticness and loudness. For the preliminary analysis acousticness was chosen as the focus. Boxplots, histograms and scatterplots were created.
+A few interesting things can be noticed. Specifically the disparity between acousticness values between indie and pov: indie. The latter covers a broader range than the former, with indie having only a few outliers beyond the range. Additionally, indie seems to have the majority of the accousticness values closer to zero, with pov: indie having a more even distribution. 
+
+Further, while plotting, an interesting observation can be made regarding the loudness. Not only is it correlated to accousticness, but the disparity between the two genres and the span of loudness they cover is significant, and is an interesting point to be developed in later research. 
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Chart B
+
 
 ```{r}
 

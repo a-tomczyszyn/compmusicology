@@ -1,5 +1,5 @@
 <h1>Computational Musicology - Portfolio</h1>
-<h2>Compus description:</h2>
+<h2>Corpus description:</h2>
 <p>
 In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
 </p>
@@ -26,8 +26,8 @@ When it comes to artists and tracks that may be atypical, Mitski (specifically "
 <h2>Initial plot analysis:</h2>
 <p>
 The innitial plot analysis was first conducted by comapring means of various audio features. Mainly three seemed to have the biggest disparity between the sets: energy, acousticness and loudness. For the preliminary analysis acousticness was chosen as the focus. Boxplots, histograms and scatterplots were created.
-A few interesting things can be noticed. Specifically the disparity between acousticness values between indie and pov: indie. The latter covers a breader range than the former, with indie having only a few outliers beyond the range. Additionally, indie seems to have the majority of the accousticness values closer to zero, with pov: indie having a more even distribution. 
+A few interesting things can be noticed. Specifically the disparity between acousticness values between indie and pov: indie. The latter covers a broader range than the former, with indie having only a few outliers beyond the range. Additionally, indie seems to have the majority of the accousticness values closer to zero, with pov: indie having a more even distribution. 
 
-Furtherly, while plotting, an interestinc observation can be made regarding the loudness. Not only is it correlated ot accousticness, but the disparity between the two genres and the span of loudnes they cover is significant, and is an interesting point to be developed in later research. 
+Further, while plotting, an interesting observation can be made regarding the loudness. Not only is it correlated to accousticness, but the disparity between the two genres and the span of loudnes they cover is significant, and is an interesting point to be developed in later research. 
 </p>
 
