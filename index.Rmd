@@ -14,6 +14,7 @@ library(tidyverse)
 ```
 
 ### Introduction
+<strong>This version of the portfolio still lacks the proper graphs and analysis, because I have decided to change some aspects of the research. Those should be added in the upcoming days.<strong>
 
 In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
 
