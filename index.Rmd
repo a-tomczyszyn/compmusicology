@@ -11,7 +11,159 @@ output:
 library(flexdashboard)
 library(spotifyr)
 library(tidyverse)
+library(compmus)
 ```
+
+An important outlier of classic indie. {data-navmenu=Chromagrams}
+========================================
+
+```{r}
+
+povindie_1 <-
+  get_tidy_audio_analysis("3JsA2sWDNR9oQogGAzqqtH") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  povindie_1 |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  povindie_1 |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+
+```
+
+The most representative track from pov: indie. {data-navmenu=Chromagrams}
+=================================================
+```{r}
+# 
+
+classindie_1 <-
+  get_tidy_audio_analysis("19W5OTEcQI3ZoRW1HERMyy") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  classindie_1 |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  classindie_1 |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+One of the most representative tracks from classic indie. {data-navmenu=Chromagrams}
+================================================================
+```{r}
+# 
+
+classindie_2 <-
+  get_tidy_audio_analysis("5cwN1htZyoWqZCc33f3RfE") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  classindie_2 |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  classindie_2 |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+
 
 ### Introduction
 **This version of the portfolio still lacks the proper graphs and analysis, because I have decided to change some aspects of the research. Those should be added in the upcoming days.**
@@ -34,6 +186,32 @@ When it comes to artists and tracks that may be atypical, Mitski (specifically "
 
 
 ### Initial plot analysis:
+```{r include=FALSE}
+povindie <- get_playlist_audio_features("", "6xjecZpyEPH6XdVyBeWUP5")
+clasindie <- get_playlist_audio_features("", "37i9dQZF1DXaLaoaQqrfyO")
+```
+```{r include=FALSE}
+combo <-
+  bind_rows(
+    povindie |> mutate(category = "pov: indie"),
+    clasindie |> mutate(category = "indie")
+  )
+```
+```{r}
+combo |>
+  ggplot(aes(x = loudness, y = acousticness, color=category)) +
+  geom_point() +
+  geom_smooth() +
+  scale_color_discrete("playlist_owner_name")
+
+combo %>%
+  ggplot(aes(x = category, y = acousticness)) +
+  geom_boxplot(fill = "lightblue", color = "blue", alpha = 0.7) +
+  geom_text(aes(label = track.name), size = 3, color = "black", vjust = -0.5, hjust = 0.5) +
+  theme_light() +
+  theme(panel.grid.major = element_line(color = "gray", linetype = "dashed"),
+        panel.background = element_rect(fill = "white"))
+```
 
 ***
 The initial plot analysis was first conducted by comparing means of various audio features. Mainly three seemed to have the biggest disparity between the sets: energy, acousticness and loudness. For the preliminary analysis acousticness was chosen as the focus. Boxplots, histograms and scatterplots were created.
