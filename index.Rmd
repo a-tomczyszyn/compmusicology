@@ -2,7 +2,7 @@
 title: "Computational Musicology Portfolio"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: rows
     vertical_layout: fill
     storyboard: true
 ---
@@ -12,7 +12,64 @@ library(flexdashboard)
 library(spotifyr)
 library(tidyverse)
 library(compmus)
+library(patchwork)
 ```
+```{r include=FALSE}
+povindie <- get_playlist_audio_features("", "6xjecZpyEPH6XdVyBeWUP5")
+clasindie <- get_playlist_audio_features("", "37i9dQZF1DXaLaoaQqrfyO")
+```
+
+Histograms
+==================================================
+
+***
+```{r}
+plot1 <- ggplot(clasindie, aes(x = clasindie$tempo)) +
+  geom_histogram() +
+  labs(title="Tempo in Classic Indie", x="Tempo (BPM)", y="Count")
+
+plot2 <- ggplot(povindie, aes(x = povindie$tempo)) +
+  geom_histogram() +
+  labs(title="Tempo in POV: Indie", x="Tempo (BPM)", y="Count")
+
+combined <- plot1 + plot2
+combined
+```
+
+### Description
+
+***
+The presented histograms have slightly different distribution. The tempo in classic indie seems to have a more normal distribution, slightly skewed towards the left, meaning towards lower BPM. pov: indie on the other hand strongly favours lower tempo values. However, the values within pov: indie are additionally more broadly distributed, compared to classic indie, with values ranging from below 75 to over 200 BPM. This indicates a preference towards slower songs, which ties with higher values of accousticness observed before. However, the median and means are almost identical for both, with median being 116 and 119 BPM respectively for classic indie and pov: indie, and with mean being 120 and 122 BPM. 
+
+Tempograms of outliers
+================================================
+
+***
+```{r include=FALSE}
+min_value_pov <- povindie %>% summarize(min_value = min(tempo))
+max_value_pov <- povindie %>% summarize(max_value = max(tempo))
+
+min_value_class <- clasindie %>% summarize(min_value = min(tempo))
+max_value_class <- clasindie %>% summarize(max_value = max(tempo))
+median_pov <- povindie %>% summarize(median = median(tempo), mean = mean(tempo))
+median_class <- clasindie %>% summarize(median = median(tempo), mean = mean(tempo))
+
+```
+```{r}
+bubble_gum <- get_tidy_audio_analysis("3zksbXteOCeSusJ5Xltr3t")
+bubble_gum |>
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(title = "Outlier tempogram (Bubble Gum by Clairo)", x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+
+### Description
+
+***
+This tempogram represents the song Bubble Gum by Clairo, which is the outlier for pov: indie, with the reported tempo of approximately 208 BPM. Interestingly, though, the tempogram seems to indicate an overall tempo of around 100 BPM with a large jump in the last sew seconds, which makes me question the accuracy of the tempo recognizing algorithm used by Spotify. 
 
 An important outlier of classic indie. {data-navmenu=Chromagrams}
 ========================================
@@ -168,7 +225,7 @@ bind_rows(
 
 Introduction
 ==========================
-**This version of the portfolio still lacks the proper graphs and analysis, because I have decided to change some aspects of the research. Those should be added in the upcoming days.**
+**This version of the portfolio still lacks the proper graphs and analysis in certain places.**
 
 In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
 
