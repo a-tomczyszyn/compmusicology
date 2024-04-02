@@ -36,11 +36,290 @@ get_pr <- function(fit) {
     ungroup() |> filter(Prediction == Truth) |> 
     select(class = Prediction, precision, recall)
 }
+
 ```
 ```{r include=FALSE}
 povindie <- get_playlist_audio_features("", "6xjecZpyEPH6XdVyBeWUP5")
 clasindie <- get_playlist_audio_features("", "37i9dQZF1DXaLaoaQqrfyO")
 ```
+
+Corpus description 
+========================
+
+### Introduction
+
+**This version of the portfolio still lacks the proper graphs and analysis in certain places.**
+
+In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
+
+This analysis will focus on comparing pov: indie to what is generally considered classic indie in order to establish core differences between the two. Some driving questions include: 
+
+<ul>
+    <li>Is pov: indie more of a "vibe" of indie music, or does it classify as a separate and uniquely different genre? If it is more of a "vibe", what describes it?</li>
+    <li>If it is found to be reasonably different, does pov: indie have recognizable precursors? Is there a rough year estimate for when it emerged?</li>
+    <li>How big is the overlap between the two genres, if any?</li>
+</ul>
+
+The analysis will be conducted by taking a representative sample of around 100 tracks out of each genre and applying some comparative measures. The samples are taken from the "Best of POV: Indie" playlist made by volt.fm and the "Indie Pop 2010s" playlist by Spotify. The best course of action would be to use two playlists created by Spotify; however, even though the company has invented the term pov: indie, no official playlist of this genre exists. This begs the question of the quality of the volt.fm creation, which can reasonably be assumed reliable and representative, as volt.fm is a statistics and music discovery tool. Additionally, both playlists have been reviewed "by eye" to double-check if they can be assumed reliable. 
+
+However, the corpus does pose some limitations. One factor that presumably may be problematic is the quite large variance in release years of songs in the pov: indie playlist. To combat the impact of this, a playlist that covers the entirety of the 2010s was chosen. Yet, this may have a reverse impact on the results - this will be checked and necessary adjustments will be made if needed.
+
+When it comes to artists and tracks that may be atypical, Mitski (specifically "Liquid Smooth"), Hozier, and My Chemical Romance in the pov: indie playlist seem like outliers. Those songs, however, may be interesting to analyze in case pov: indie ends up representing more of a "vibe", rather than separate genre qualities. The classic indie playlist seems more balanced in that regard, though it still contains some artists and tracks that could be considered on the verge of genres (Arcade Fire, Mumford & Sons). As far as typical examples go, pov: indie is a bit difficult to assess since the genre is not clearly defined. In the classic indie playlist, almost all entries are very representative, with examples like Clairo, GROUPLOVE, Wallows, Dayglow, and alt-J.
+
+The general belief, before conducting this research, is that the difference between the two will be barely noticeable on a statistical and musicological level. Yet, the distinction will be more significant in a social context, specifically through the lens of "virality" and popularity on short-content platforms like TikTok or Instagram Reels. 
+
+### Corpus Playlists
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6xjecZpyEPH6XdVyBeWUP5?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+***
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXaLaoaQqrfyO?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+
+
+Track-level feature analysis
+====================================
+
+```{r include=FALSE}
+combo <-
+  bind_rows(
+    povindie |> mutate(category = "pov: indie"),
+    clasindie |> mutate(category = "indie")
+  )
+```
+
+```{r}
+combo |>
+  ggplot(aes(x = loudness, y = acousticness, color=category)) +
+  geom_point() +
+  geom_smooth() +
+  scale_color_discrete("Genre:")
+```
+
+```{r}
+combo %>%
+  ggplot(aes(x = category, y = acousticness)) +
+  geom_boxplot(fill = "lightblue", color = "blue", alpha = 0.7) +
+  theme_light() +
+  theme(panel.grid.major = element_line(color = "gray", linetype = "dashed"),
+        panel.background = element_rect(fill = "white"))
+```
+
+### Description
+
+***
+The initial plot analysis was first conducted by comparing means of various audio features. Mainly three seemed to have the biggest disparity between the sets: energy, acousticness and loudness. For the preliminary analysis acousticness was chosen as the focus. Boxplots, histograms and scatterplots were created.
+A few interesting things can be noticed. Specifically the disparity between acousticness values between indie and pov: indie. The latter covers a broader range than the former, with indie having only a few outliers beyond the range. Additionally, indie seems to have the majority of the accousticness values closer to zero, with pov: indie having a more even distribution. 
+
+Further, while plotting, an interesting observation can be made regarding the loudness. Not only is it correlated to accousticness, but the disparity between the two genres and the span of loudness they cover is significant, and is an interesting point to be developed in later research. 
+
+
+The most representative track from pov: indie. {data-navmenu=Chromagrams}
+=================================================
+```{r}
+# 
+
+classindie_1 <-
+  get_tidy_audio_analysis("19W5OTEcQI3ZoRW1HERMyy") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  classindie_1 |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  classindie_1 |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+
+One of the most representative tracks from classic indie. {data-navmenu=Chromagrams}
+================================================================
+```{r}
+# 
+
+classindie_2 <-
+  get_tidy_audio_analysis("5cwN1htZyoWqZCc33f3RfE") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  classindie_2 |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  classindie_2 |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+
+An important outlier of classic indie. {data-navmenu=Chromagrams}
+========================================
+
+```{r}
+
+povindie_1 <-
+  get_tidy_audio_analysis("3JsA2sWDNR9oQogGAzqqtH") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+bind_rows(
+  povindie_1 |>
+    compmus_self_similarity(pitches, "aitchison") |>
+    mutate(d = d / max(d), type = "Chroma"),
+  povindie_1 |>
+    compmus_self_similarity(timbre, "euclidean") |>
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  mutate() |>
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  facet_wrap(~type) +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+
+```
+
+
+Histograms
+==================================================
+
+***
+```{r}
+plot1 <- ggplot(clasindie, aes(x = clasindie$tempo)) +
+  geom_histogram() +
+  labs(title="Tempo in Classic Indie", x="Tempo (BPM)", y="Count")
+
+plot2 <- ggplot(povindie, aes(x = povindie$tempo)) +
+  geom_histogram() +
+  labs(title="Tempo in POV: Indie", x="Tempo (BPM)", y="Count")
+
+combined <- plot1 + plot2
+combined
+```
+
+### Description
+
+***
+The presented histograms have slightly different distribution. The tempo in classic indie seems to have a more normal distribution, slightly skewed towards the left, meaning towards lower BPM. pov: indie on the other hand strongly favours lower tempo values. However, the values within pov: indie are additionally more broadly distributed, compared to classic indie, with values ranging from below 75 to over 200 BPM. This indicates a preference towards slower songs, which ties with higher values of accousticness observed before. However, the median and means are almost identical for both, with median being 116 and 119 BPM respectively for classic indie and pov: indie, and with mean being 120 and 122 BPM. 
+
+Tempograms of outliers
+================================================
+
+***
+```{r include=FALSE}
+min_value_pov <- povindie %>% summarize(min_value = min(tempo))
+max_value_pov <- povindie %>% summarize(max_value = max(tempo))
+
+min_value_class <- clasindie %>% summarize(min_value = min(tempo))
+max_value_class <- clasindie %>% summarize(max_value = max(tempo))
+median_pov <- povindie %>% summarize(median = median(tempo), mean = mean(tempo))
+median_class <- clasindie %>% summarize(median = median(tempo), mean = mean(tempo))
+
+```
+```{r}
+bubble_gum <- get_tidy_audio_analysis("3zksbXteOCeSusJ5Xltr3t")
+bubble_gum |>
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(title = "Outlier tempogram (Bubble Gum by Clairo)", x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+
+### Description
+
+***
+This tempogram represents the song Bubble Gum by Clairo, which is the outlier for pov: indie, with the reported tempo of approximately 208 BPM. Interestingly, though, the tempogram seems to indicate an overall tempo of around 100 BPM with a large jump in the last sew seconds, which makes me question the accuracy of the tempo recognizing algorithm used by Spotify. 
+
+
 
 Classification
 ======================================
@@ -181,267 +460,6 @@ class_dist |>
 
 ```
 
-Histograms
-==================================================
-
-***
-```{r}
-plot1 <- ggplot(clasindie, aes(x = clasindie$tempo)) +
-  geom_histogram() +
-  labs(title="Tempo in Classic Indie", x="Tempo (BPM)", y="Count")
-
-plot2 <- ggplot(povindie, aes(x = povindie$tempo)) +
-  geom_histogram() +
-  labs(title="Tempo in POV: Indie", x="Tempo (BPM)", y="Count")
-
-combined <- plot1 + plot2
-combined
-```
-
-### Description
-
-***
-The presented histograms have slightly different distribution. The tempo in classic indie seems to have a more normal distribution, slightly skewed towards the left, meaning towards lower BPM. pov: indie on the other hand strongly favours lower tempo values. However, the values within pov: indie are additionally more broadly distributed, compared to classic indie, with values ranging from below 75 to over 200 BPM. This indicates a preference towards slower songs, which ties with higher values of accousticness observed before. However, the median and means are almost identical for both, with median being 116 and 119 BPM respectively for classic indie and pov: indie, and with mean being 120 and 122 BPM. 
-
-Tempograms of outliers
-================================================
-
-***
-```{r include=FALSE}
-min_value_pov <- povindie %>% summarize(min_value = min(tempo))
-max_value_pov <- povindie %>% summarize(max_value = max(tempo))
-
-min_value_class <- clasindie %>% summarize(min_value = min(tempo))
-max_value_class <- clasindie %>% summarize(max_value = max(tempo))
-median_pov <- povindie %>% summarize(median = median(tempo), mean = mean(tempo))
-median_class <- clasindie %>% summarize(median = median(tempo), mean = mean(tempo))
-
-```
-```{r}
-bubble_gum <- get_tidy_audio_analysis("3zksbXteOCeSusJ5Xltr3t")
-bubble_gum |>
-  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) |>
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(title = "Outlier tempogram (Bubble Gum by Clairo)", x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic()
-```
-
-### Description
-
-***
-This tempogram represents the song Bubble Gum by Clairo, which is the outlier for pov: indie, with the reported tempo of approximately 208 BPM. Interestingly, though, the tempogram seems to indicate an overall tempo of around 100 BPM with a large jump in the last sew seconds, which makes me question the accuracy of the tempo recognizing algorithm used by Spotify. 
-
-An important outlier of classic indie. {data-navmenu=Chromagrams}
-========================================
-
-```{r}
-
-povindie_1 <-
-  get_tidy_audio_analysis("3JsA2sWDNR9oQogGAzqqtH") |>
-  compmus_align(bars, segments) |>
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "acentre", norm = "manhattan"
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  )
-bind_rows(
-  povindie_1 |>
-    compmus_self_similarity(pitches, "aitchison") |>
-    mutate(d = d / max(d), type = "Chroma"),
-  povindie_1 |>
-    compmus_self_similarity(timbre, "euclidean") |>
-    mutate(d = d / max(d), type = "Timbre")
-) |>
-  mutate() |>
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  facet_wrap(~type) +
-  scale_fill_viridis_c(guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "")
-
-```
-
-The most representative track from pov: indie. {data-navmenu=Chromagrams}
-=================================================
-```{r}
-# 
-
-classindie_1 <-
-  get_tidy_audio_analysis("19W5OTEcQI3ZoRW1HERMyy") |>
-  compmus_align(bars, segments) |>
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "acentre", norm = "manhattan"
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  )
-bind_rows(
-  classindie_1 |>
-    compmus_self_similarity(pitches, "aitchison") |>
-    mutate(d = d / max(d), type = "Chroma"),
-  classindie_1 |>
-    compmus_self_similarity(timbre, "euclidean") |>
-    mutate(d = d / max(d), type = "Timbre")
-) |>
-  mutate() |>
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  facet_wrap(~type) +
-  scale_fill_viridis_c(guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "")
-```
-
-One of the most representative tracks from classic indie. {data-navmenu=Chromagrams}
-================================================================
-```{r}
-# 
-
-classindie_2 <-
-  get_tidy_audio_analysis("5cwN1htZyoWqZCc33f3RfE") |>
-  compmus_align(bars, segments) |>
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "acentre", norm = "manhattan"
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "mean"
-      )
-  )
-bind_rows(
-  classindie_2 |>
-    compmus_self_similarity(pitches, "aitchison") |>
-    mutate(d = d / max(d), type = "Chroma"),
-  classindie_2 |>
-    compmus_self_similarity(timbre, "euclidean") |>
-    mutate(d = d / max(d), type = "Timbre")
-) |>
-  mutate() |>
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  facet_wrap(~type) +
-  scale_fill_viridis_c(guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "")
-```
-
-
-Introduction
-==========================
-**This version of the portfolio still lacks the proper graphs and analysis in certain places.**
-
-In the recent Wrapped, Spotify introduced a new genre called pov: indie, which gained much traction throughout various internet communities, as users' tastes were being described with that term. The repeated question among all those groups rang: "What is pov: indie?".
-
-This analysis will focus on comparing pov: indie to what is generally considered classic indie in order to establish core differences between the two. Some driving questions include: 
-
-<ul>
-    <li>Is pov: indie more of a "vibe" of indie music, or does it classify as a separate and uniquely different genre? If it is more of a "vibe", what describes it?</li>
-    <li>If it is found to be reasonably different, does pov: indie have recognizable precursors? Is there a rough year estimate for when it emerged?</li>
-    <li>How big is the overlap between the two genres, if any?</li>
-</ul>
-
-The analysis will be conducted by taking a representative sample of around 100 tracks out of each genre and applying some comparative measures. The samples are taken from the "Best of POV: Indie" playlist made by volt.fm and the "Indie Pop 2010s" playlist by Spotify. The best course of action would be to use two playlists created by Spotify; however, even though the company has invented the term pov: indie, no official playlists of this genre exist. This begs the question of the quality of the volt.fm creation, which can reasonably be assumed reliable and representative, as volt.fm is a stats and music discovery tool. Additionally, both playlists have been reviewed "by eye" to double-check if they can be assumed reliable. 
-
-However, the corpus does pose some limitations. One factor that presumably may be problematic is the quite large variance in release years of songs in the pov: indie playlist. To combat the impact of this, a playlist that covers the entirety of the 2010s was chosen. Yet, this may have a reverse impact on the results - this will be checked and necessary adjustments will be made if needed.
-
-When it comes to artists and tracks that may be atypical, Mitski (specifically "Liquid Smooth"), Hozier, and My Chemical Romance in the pov: indie playlist seem like outliers. Those songs, however, may be interesting to analyze in case pov: indie ends up representing more of a "vibe", rather than separate genre qualities. The classic indie playlist seems more balanced in that regard, though it still contains some artists and tracks that could be considered on the verge of genres (Arcade Fire, Mumford & Sons). As far as typical examples go, pov: indie is a bit difficult to assess since the genre is not clearly defined. In the classic indie playlist, almost all entries are very representative, with examples like Clairo, GROUPLOVE, Wallows, Dayglow, and alt-J.
-
-
-Initial plot analysis:
-====================================
-```{r include=FALSE}
-povindie <- get_playlist_audio_features("", "6xjecZpyEPH6XdVyBeWUP5")
-clasindie <- get_playlist_audio_features("", "37i9dQZF1DXaLaoaQqrfyO")
-```
-```{r include=FALSE}
-combo <-
-  bind_rows(
-    povindie |> mutate(category = "pov: indie"),
-    clasindie |> mutate(category = "indie")
-  )
-```
-```{r}
-combo |>
-  ggplot(aes(x = loudness, y = acousticness, color=category)) +
-  geom_point() +
-  geom_smooth() +
-  scale_color_discrete("playlist_owner_name")
-
-combo %>%
-  ggplot(aes(x = category, y = acousticness)) +
-  geom_boxplot(fill = "lightblue", color = "blue", alpha = 0.7) +
-  geom_text(aes(label = track.name), size = 3, color = "black", vjust = -0.5, hjust = 0.5) +
-  theme_light() +
-  theme(panel.grid.major = element_line(color = "gray", linetype = "dashed"),
-        panel.background = element_rect(fill = "white"))
-```
-
-### Description
-
-***
-The initial plot analysis was first conducted by comparing means of various audio features. Mainly three seemed to have the biggest disparity between the sets: energy, acousticness and loudness. For the preliminary analysis acousticness was chosen as the focus. Boxplots, histograms and scatterplots were created.
-A few interesting things can be noticed. Specifically the disparity between acousticness values between indie and pov: indie. The latter covers a broader range than the former, with indie having only a few outliers beyond the range. Additionally, indie seems to have the majority of the accousticness values closer to zero, with pov: indie having a more even distribution. 
-
-Further, while plotting, an interesting observation can be made regarding the loudness. Not only is it correlated to accousticness, but the disparity between the two genres and the span of loudness they cover is significant, and is an interesting point to be developed in later research. 
 
 
 Conclusion
